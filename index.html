@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>파트너 라이브 전용 드라이브 조회</title>
+  <link rel="icon" href="data:,">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -36,8 +37,10 @@
     }
     h2 { font-size: 22px; color: #212529; margin-bottom: 8px; }
     p.desc { font-size: 14px; color: #6c757d; margin-bottom: 24px; line-height: 1.5; }
+    
     .field-group { text-align: left; margin-bottom: 16px; }
     .field-group label { display: block; font-size: 13px; font-weight: 600; color: #495057; margin-bottom: 6px; }
+    
     input[type="date"], select {
       width: 100%;
       padding: 13px 14px;
@@ -46,7 +49,10 @@
       border-radius: 8px;
       outline: none;
       background: #fff;
+      color: #212529;
     }
+    input[type="date"]:focus, select:focus { border-color: #1a73e8; }
+    
     button.submit-btn {
       width: 100%;
       padding: 14px;
@@ -60,6 +66,7 @@
       cursor: pointer;
     }
     button.submit-btn:hover { background: #1557b0; }
+
     #resultArea { margin-top: 24px; display: none; }
     .result-box {
       background: #f8f9fa;
@@ -81,6 +88,7 @@
       font-weight: 700;
       border-radius: 6px;
     }
+    .open-btn:hover { background: #12b886; }
     .msg-error { margin-top: 16px; font-size: 14px; color: #fa5252; display: none; }
   </style>
 </head>
@@ -120,7 +128,6 @@
   </div>
 
   <script>
-    // 복사한 '드라이브_링크공유' 탭의 CSV 웹 게시 링크 입력
     const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSJR2Da1fGj9Ut9FmjXzZMA-r56p07tjsjrhvENi1a7AfGmk3cXG8cUkJp4Z5DseR_pomAQXnnsIKkh/pub?gid=20260102&single=true&output=csv";
 
     async function findDriveFolder() {
@@ -149,19 +156,47 @@
         const lines = text.split(/\r?\n/);
         let matched = null;
 
+        const targetDateDigits = dateInput.replace(/[^0-9]/g, "");
+        const targetHour = timeInput.split(":")[0];
+
         for (let i = 0; i < lines.length; i++) {
           const row = parseCSVRow(lines[i]);
-          if (row.length < 7) continue;
+          
+          let driveUrl = "";
+          let brandName = "";
+          let folderName = "";
+          let hasDate = false;
+          let hasTime = false;
 
-          // 시트 구조: B열=일자, C열=시간, D열=브랜드, E열=폴더명, G열=드라이브URL
-          const rDate = clean(row[1]);
-          const rTime = clean(row[2]);
-          const rBrand = clean(row[3]);
-          const rFolder = clean(row[4]);
-          const rUrl = clean(row[6]);
+          for (let j = 0; j < row.length; j++) {
+            const cell = clean(row[j]);
+            if (!cell) continue;
 
-          if (rDate === dateInput && rTime.startsWith(timeInput) && rUrl.startsWith("http")) {
-            matched = { brand: rBrand, folder: rFolder, url: rUrl };
+            if (cell.includes("drive.google.com/drive/folders/")) {
+              driveUrl = cell;
+            }
+            const cellDigits = cell.replace(/[^0-9]/g, "");
+            if (cellDigits === targetDateDigits) {
+              hasDate = true;
+            }
+            if (cell.startsWith(timeInput) || cell === `${targetHour}시`) {
+              hasTime = true;
+            }
+            if (cell.includes("시_") && cell.includes("(")) {
+              folderName = cell;
+              const parts = cell.split("_");
+              if (parts.length >= 3) {
+                brandName = parts[2].replace("(파트너)", "").trim();
+              }
+            }
+          }
+
+          if (hasDate && hasTime && driveUrl) {
+            matched = {
+              brand: brandName || "파트너 라이브",
+              folder: folderName || "전용 폴더",
+              url: driveUrl
+            };
             break;
           }
         }
@@ -174,7 +209,8 @@
           showError("해당 일시에는 배정된 방송 및 전용 폴더가 없습니다.");
         }
       } catch (err) {
-        showError("데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+        console.error(err);
+        showError("데이터를 불러오는 중 오류가 발생했습니다.");
       } finally {
         searchBtn.innerText = "조회하기";
         searchBtn.disabled = false;
