@@ -3,127 +3,257 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>파트너 라이브 전용 드라이브 조회</title>
+  <title>OLIVE YOUNG 파트너 라이브 | 방송 업무 일정 대시보드</title>
   <link rel="icon" href="data:,">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
-      background: #f4f6f8;
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #f4f7f0 0%, #e9efe2 100%);
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       padding: 20px;
+      color: #1e2420;
     }
     .card {
       background: #ffffff;
       width: 100%;
-      max-width: 440px;
-      padding: 36px 30px;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-      text-align: center;
-    }
-    .badge {
-      display: inline-block;
-      padding: 6px 12px;
-      background: #e8f0fe;
-      color: #1a73e8;
-      font-size: 12px;
-      font-weight: 700;
+      max-width: 460px;
       border-radius: 20px;
-      margin-bottom: 12px;
+      box-shadow: 0 16px 36px rgba(26, 46, 34, 0.10);
+      overflow: hidden;
+      border: 1px solid rgba(132, 189, 0, 0.25);
     }
-    h2 { font-size: 22px; color: #212529; margin-bottom: 8px; }
-    p.desc { font-size: 14px; color: #6c757d; margin-bottom: 24px; line-height: 1.5; }
-    
-    .field-group { text-align: left; margin-bottom: 16px; }
-    .field-group label { display: block; font-size: 13px; font-weight: 600; color: #495057; margin-bottom: 6px; }
-    
-    input[type="date"], select {
+    /* 상단 올리브영 브랜드 헤더 */
+    .card-header {
+      background: linear-gradient(135deg, #1b2e22 0%, #26402f 100%);
+      padding: 32px 30px 28px;
+      text-align: left;
+      position: relative;
+    }
+    .card-header::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
       width: 100%;
-      padding: 13px 14px;
-      font-size: 15px;
-      border: 1.5px solid #dee2e6;
-      border-radius: 8px;
-      outline: none;
-      background: #fff;
-      color: #212529;
+      height: 4px;
+      background: linear-gradient(90deg, #84bd00 0%, #a5db24 100%);
     }
-    input[type="date"]:focus, select:focus { border-color: #1a73e8; }
-    
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(132, 189, 0, 0.18);
+      border: 1px solid rgba(132, 189, 0, 0.45);
+      color: #b4e838;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+    }
+    .brand-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #9ce000;
+    }
+    .card-header h1 {
+      font-size: 21px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.4;
+      letter-spacing: -0.4px;
+      margin-bottom: 8px;
+    }
+    .card-header h1 span {
+      color: #a8e31e;
+    }
+    .card-header p {
+      font-size: 13.5px;
+      color: #c4d1c9;
+      line-height: 1.5;
+    }
+
+    /* 본문 입력 영역 */
+    .card-body {
+      padding: 28px 30px 32px;
+    }
+    .field-group {
+      text-align: left;
+      margin-bottom: 18px;
+    }
+    .field-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #2c3830;
+      margin-bottom: 7px;
+    }
+    input[type="date"], input[type="text"], select {
+      width: 100%;
+      padding: 13px 15px;
+      font-size: 15px;
+      border: 1.5px solid #dce2dd;
+      border-radius: 10px;
+      outline: none;
+      background: #fafcfa;
+      color: #1e2420;
+      transition: all 0.2s ease;
+    }
+    input[type="date"]:focus, input[type="text"]:focus, select:focus {
+      background: #ffffff;
+      border-color: #84bd00;
+      box-shadow: 0 0 0 3.5px rgba(132, 189, 0, 0.16);
+    }
+
     button.submit-btn {
       width: 100%;
-      padding: 14px;
-      margin-top: 10px;
+      padding: 15px;
+      margin-top: 8px;
       font-size: 16px;
       font-weight: 700;
-      color: #fff;
-      background: #1a73e8;
+      color: #142219;
+      background: #84bd00;
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button.submit-btn:hover { background: #1557b0; }
-
-    #resultArea { margin-top: 24px; display: none; }
-    .result-box {
-      background: #f8f9fa;
-      border: 1.5px solid #e9ecef;
       border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(132, 189, 0, 0.28);
+    }
+    button.submit-btn:hover {
+      background: #76aa00;
+      transform: translateY(-1px);
+    }
+    button.submit-btn:active {
+      transform: translateY(0);
+    }
+    button.submit-btn:disabled {
+      background: #c8d1cb;
+      color: #6b756e;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    /* 조회 결과 카드 */
+    #resultArea {
+      margin-top: 22px;
+      display: none;
+    }
+    .result-box {
+      background: #f5f9ef;
+      border: 1.5px solid #cce39b;
+      border-radius: 12px;
       padding: 20px;
       text-align: left;
     }
-    .result-title { font-size: 13px; color: #868e96; margin-bottom: 4px; }
-    .result-name { font-size: 16px; font-weight: 700; color: #212529; margin-bottom: 16px; word-break: break-all; }
+    .result-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #5b7a16;
+      margin-bottom: 4px;
+    }
+    .result-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1b2e22;
+      margin-bottom: 16px;
+      word-break: break-all;
+    }
     .open-btn {
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       width: 100%;
-      padding: 12px;
-      background: #20c997;
-      color: white;
+      padding: 13px;
+      background: #1b2e22;
+      color: #b4e838;
       text-align: center;
       text-decoration: none;
+      font-size: 15px;
       font-weight: 700;
-      border-radius: 6px;
+      border-radius: 8px;
+      transition: background 0.2s ease;
     }
-    .open-btn:hover { background: #12b886; }
-    .msg-error { margin-top: 16px; font-size: 14px; color: #fa5252; display: none; }
+    .open-btn:hover {
+      background: #274231;
+    }
+
+    .msg-error {
+      margin-top: 16px;
+      padding: 12px;
+      background: #fff5f5;
+      border: 1px solid #ffc9c9;
+      border-radius: 8px;
+      font-size: 13.5px;
+      color: #e03131;
+      text-align: center;
+      display: none;
+    }
+
+    .card-footer {
+      padding: 14px 30px;
+      background: #f8faf8;
+      border-top: 1px solid #edf1ee;
+      font-size: 12px;
+      color: #7c8780;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <span class="badge">파트너 라이브</span>
-    <h2>전용 폴더 바로가기</h2>
-    <p class="desc">편성된 방송 날짜와 시간을 선택하시면<br>해당 브랜드의 전용 드라이브 링크가 열립니다.</p>
-
-    <div class="field-group">
-      <label for="broadcastDate">방송 일자</label>
-      <input type="date" id="broadcastDate">
-    </div>
-
-    <div class="field-group">
-      <label for="broadcastTime">방송 시간</label>
-      <select id="broadcastTime">
-        <option value="">시간대를 선택하세요</option>
-        <option value="12:00">12:00 (낮)</option>
-        <option value="18:00">18:00 (퇴근)</option>
-        <option value="20:00">20:00 (저녁)</option>
-        <option value="22:00">22:00 (심야)</option>
-      </select>
-    </div>
-
-    <button class="submit-btn" id="searchBtn" onclick="findDriveFolder()">조회하기</button>
-    <div id="errorMsg" class="msg-error"></div>
-
-    <div id="resultArea">
-      <div class="result-box">
-        <div class="result-title">브랜드 / 폴더명</div>
-        <div class="result-name" id="folderTitle">-</div>
-        <a href="#" target="_blank" id="driveLinkBtn" class="open-btn">📂 구글 드라이브 폴더 열기</a>
+    <div class="card-header">
+      <div class="brand-pill">
+        <span class="brand-dot"></span>
+        OLIVE YOUNG PARTNER LIVE
       </div>
+      <h1><span>방송 업무 일정 대시보드</span>로<br>바로 가보세요!</h1>
+      <p>편성된 방송 일시와 브랜드명을 입력하시면<br>파트너 전용 구글 드라이브 폴더가 열립니다.</p>
+    </div>
+
+    <div class="card-body">
+      <div class="field-group">
+        <label for="broadcastDate">방송 일자</label>
+        <input type="date" id="broadcastDate">
+      </div>
+
+      <div class="field-group">
+        <label for="broadcastTime">방송 시간</label>
+        <select id="broadcastTime">
+          <option value="">시간대를 선택하세요</option>
+          <option value="12:00">12:00</option>
+          <option value="18:00">18:00</option>
+          <option value="20:00">20:00</option>
+          <option value="22:00">22:00</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label for="brandInput">브랜드명</label>
+        <input type="text" id="brandInput" placeholder="예: 에스네이처" autocomplete="off" onkeypress="if(event.key === 'Enter') findDriveFolder()">
+      </div>
+
+      <button class="submit-btn" id="searchBtn" onclick="findDriveFolder()">대시보드 폴더 조회하기</button>
+      <div id="errorMsg" class="msg-error"></div>
+
+      <div id="resultArea">
+        <div class="result-box">
+          <div class="result-title">배정된 브랜드 / 전용 폴더</div>
+          <div class="result-name" id="folderTitle">-</div>
+          <a href="#" target="_blank" id="driveLinkBtn" class="open-btn">📂 구글 드라이브 폴더 바로가기</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      OLIVE YOUNG Partner Live Operation Portal
     </div>
   </div>
 
@@ -133,6 +263,8 @@
     async function findDriveFolder() {
       const dateInput = document.getElementById("broadcastDate").value.trim();
       const timeInput = document.getElementById("broadcastTime").value.trim();
+      const brandInput = document.getElementById("brandInput").value.replace(/\s+/g, "").toLowerCase();
+
       const errorMsg = document.getElementById("errorMsg");
       const resultArea = document.getElementById("resultArea");
       const searchBtn = document.getElementById("searchBtn");
@@ -140,12 +272,12 @@
       errorMsg.style.display = "none";
       resultArea.style.display = "none";
 
-      if (!dateInput || !timeInput) {
-        showError("방송 일자와 방송 시간을 모두 선택해 주세요.");
+      if (!dateInput || !timeInput || !brandInput) {
+        showError("방송 일자, 방송 시간, 브랜드명을 모두 입력해 주세요.");
         return;
       }
 
-      searchBtn.innerText = "조회 중...";
+      searchBtn.innerText = "일정 확인 중...";
       searchBtn.disabled = true;
 
       try {
@@ -163,10 +295,11 @@
           const row = parseCSVRow(lines[i]);
           
           let driveUrl = "";
-          let brandName = "";
           let folderName = "";
+          let extractedBrand = "";
           let hasDate = false;
           let hasTime = false;
+          let hasBrand = false;
 
           for (let j = 0; j < row.length; j++) {
             const cell = clean(row[j]);
@@ -186,14 +319,22 @@
               folderName = cell;
               const parts = cell.split("_");
               if (parts.length >= 3) {
-                brandName = parts[2].replace("(파트너)", "").trim();
+                extractedBrand = parts[2].replace("(파트너)", "").trim();
               }
+            }
+            const normalizedCell = cell.replace(/\s+/g, "").toLowerCase();
+            if (normalizedCell === brandInput) {
+              hasBrand = true;
             }
           }
 
-          if (hasDate && hasTime && driveUrl) {
+          if (extractedBrand && extractedBrand.replace(/\s+/g, "").toLowerCase() === brandInput) {
+            hasBrand = true;
+          }
+
+          if (hasDate && hasTime && hasBrand && driveUrl) {
             matched = {
-              brand: brandName || "파트너 라이브",
+              brand: extractedBrand || document.getElementById("brandInput").value.trim(),
               folder: folderName || "전용 폴더",
               url: driveUrl
             };
@@ -206,13 +347,13 @@
           document.getElementById("driveLinkBtn").href = matched.url;
           resultArea.style.display = "block";
         } else {
-          showError("해당 일시에는 배정된 방송 및 전용 폴더가 없습니다.");
+          showError("입력하신 일시 및 브랜드명과 일치하는 전용 폴더가 없습니다.");
         }
       } catch (err) {
         console.error(err);
-        showError("데이터를 불러오는 중 오류가 발생했습니다.");
+        showError("데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
       } finally {
-        searchBtn.innerText = "조회하기";
+        searchBtn.innerText = "대시보드 폴더 조회하기";
         searchBtn.disabled = false;
       }
     }
