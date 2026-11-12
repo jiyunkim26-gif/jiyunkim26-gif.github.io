@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>전용 폴더 바로가기</title>
+  <title>파트너 라이브 전용 드라이브 조회</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f1f3f5;
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
+      background: #f4f6f8;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -18,114 +18,301 @@
     .card {
       background: #ffffff;
       width: 100%;
-      max-width: 420px;
-      padding: 36px 28px;
+      max-width: 440px;
+      padding: 36px 30px;
       border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
       text-align: center;
+      position: relative;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      background: #e8f0fe;
+      color: #1a73e8;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      cursor: pointer; /* 관리자 모드 숨김 트리거 */
+      user-select: none;
     }
     h2 { font-size: 22px; color: #212529; margin-bottom: 8px; }
-    p { font-size: 14px; color: #868e96; margin-bottom: 24px; line-height: 1.5; }
-    .input-group { display: flex; flex-direction: column; gap: 10px; }
-    input {
+    p.desc { font-size: 14px; color: #6c757d; margin-bottom: 24px; line-height: 1.5; }
+    
+    .field-group { text-align: left; margin-bottom: 16px; }
+    .field-group label { display: block; font-size: 13px; font-weight: 600; color: #495057; margin-bottom: 6px; }
+    
+    input[type="date"], select {
       width: 100%;
-      padding: 14px;
-      font-size: 16px;
+      padding: 13px 14px;
+      font-size: 15px;
       border: 1.5px solid #dee2e6;
       border-radius: 8px;
       outline: none;
-      transition: border-color 0.2s;
+      background: #fff;
+      color: #212529;
     }
-    input:focus { border-color: #1a73e8; }
-    button {
+    input[type="date"]:focus, select:focus { border-color: #1a73e8; }
+    
+    button.submit-btn {
       width: 100%;
       padding: 14px;
+      margin-top: 10px;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: 700;
       color: #fff;
       background: #1a73e8;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      transition: background 0.2s;
     }
-    button:hover { background: #1557b0; }
-    #msg {
-      margin-top: 16px;
-      font-size: 14px;
-      min-height: 20px;
-      color: #e03131;
+    button.submit-btn:hover { background: #1557b0; }
+
+    #resultArea { margin-top: 24px; display: none; }
+    .result-box {
+      background: #f8f9fa;
+      border: 1.5px solid #e9ecef;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: left;
     }
+    .result-title { font-size: 13px; color: #868e96; margin-bottom: 4px; }
+    .result-name { font-size: 16px; font-weight: 700; color: #212529; margin-bottom: 16px; word-break: break-all; }
+    .open-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #20c997;
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 700;
+      border-radius: 6px;
+    }
+    .msg-error { margin-top: 16px; font-size: 14px; color: #fa5252; display: none; }
+
+    /* 숨겨진 관리자 패널 스타일 */
+    #adminPanel {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      padding: 20px;
+    }
+    .admin-card {
+      background: #fff;
+      max-width: 650px;
+      width: 100%;
+      padding: 24px;
+      border-radius: 12px;
+      text-align: left;
+    }
+    .admin-card h3 { margin-bottom: 8px; font-size: 18px; }
+    .admin-card p { font-size: 13px; color: #666; margin-bottom: 12px; line-height: 1.4; }
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 10px;
+      font-size: 12px;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      font-family: monospace;
+      white-space: pre;
+      overflow-x: auto;
+    }
+    .admin-btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .btn-secondary { background: #ced4da; color: #333; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; }
+    .btn-primary { background: #1a73e8; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>전용 폴더 조회</h2>
-    <p>배정된 식별 코드(또는 이름/전화번호)를 입력하세요.</p>
-    
-    <div class="input-group">
-      <input type="text" id="userInput" placeholder="식별값 입력" autocomplete="off" onkeypress="if(event.key === 'Enter') checkAndRedirect()">
-      <button onclick="checkAndRedirect()" id="submitBtn">폴더로 이동하기</button>
+    <!-- 상단 뱃지를 5번 연속 빠르게 클릭하면 관리자 모드가 열립니다 -->
+    <span class="badge" id="secretBadge">파트너 라이브</span>
+    <h2>전용 폴더 바로가기</h2>
+    <p class="desc">편성된 방송 날짜와 시간을 선택하시면<br>해당 브랜드의 전용 드라이브 링크가 열립니다.</p>
+
+    <div class="field-group">
+      <label for="broadcastDate">방송 일자</label>
+      <input type="date" id="broadcastDate">
     </div>
 
-    <div id="msg"></div>
+    <div class="field-group">
+      <label for="broadcastTime">방송 시간</label>
+      <select id="broadcastTime">
+        <option value="">시간대를 선택하세요</option>
+        <option value="12:00">12:00 (낮)</option>
+        <option value="18:00">18:00 (퇴근)</option>
+        <option value="20:00">20:00 (저녁)</option>
+        <option value="22:00">22:00 (심야)</option>
+      </select>
+    </div>
+
+    <button class="submit-btn" onclick="findDriveFolder()">조회하기</button>
+    <div id="errorMsg" class="msg-error"></div>
+
+    <div id="resultArea">
+      <div class="result-box">
+        <div class="result-title">브랜드 / 폴더명</div>
+        <div class="result-name" id="folderTitle">-</div>
+        <a href="#" target="_blank" id="driveLinkBtn" class="open-btn">📂 구글 드라이브 폴더 열기</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 숨겨진 관리자 입력 모달창 -->
+  <div id="adminPanel">
+    <div class="admin-card">
+      <h3>🔒 관리자 데이터 동기화</h3>
+      <p>구글 시트의 <strong>[드라이브_링크공유]</strong> 탭에서 <code>No</code>부터 <code>협력사 담당 / 비고</code>까지 표 데이터 전체를 드래그 복사(Ctrl+C)한 뒤 아래에 붙여넣기(Ctrl+V)하세요.</p>
+      <textarea id="pasteInput" placeholder="시트 표 내용을 여기에 그대로 붙여넣으세요..."></textarea>
+      <div class="admin-btn-row">
+        <button class="btn-secondary" onclick="closeAdmin()">닫기</button>
+        <button class="btn-primary" onclick="saveData()">저장 및 동기화</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // ==========================================
-    // [데이터 매핑 설정]
-    // 키: 사용자 입력값의 SHA-256 해시값 (소문자)
-    // 값: 이동할 구글 드라이브 폴더 전체 URL
-    // ==========================================
-    const FOLDER_MAP = {
-      // 예시 1: 입력값 "1234"
-      "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4": "https://drive.google.com/drive/folders/폴더ID_1",
+    // ----------------------------------------------------
+    // 1. 관리자 패널 숨김 트리거 (상단 뱃지 5회 연속 클릭)
+    // ----------------------------------------------------
+    let clickCount = 0;
+    let clickTimer = null;
+    document.getElementById("secretBadge").addEventListener("click", () => {
+      clickCount++;
+      clearTimeout(clickTimer);
+      if (clickCount >= 5) {
+        document.getElementById("adminPanel").style.display = "flex";
+        clickCount = 0;
+      }
+      clickTimer = setTimeout(() => { clickCount = 0; }, 1000);
+    });
 
-      // 예시 2: 입력값 "홍길동"
-      "60c6d7a46cbe702a4358a98f1ec1ea3b719cb3da101fa2eb05b76cf6b1424e88": "https://drive.google.com/drive/folders/폴더ID_2"
-    };
-
-    // 브라우저 기본 내장 Web Crypto API로 SHA-256 해시 계산
-    async function getSHA256(str) {
-      const buffer = new TextEncoder().encode(str.trim().toLowerCase());
-      const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
-      return Array.from(new Uint8Array(hashBuffer))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
+    function closeAdmin() {
+      document.getElementById("adminPanel").style.display = "none";
     }
 
-    async function checkAndRedirect() {
-      const input = document.getElementById("userInput").value;
-      const msg = document.getElementById("msg");
-      const btn = document.getElementById("submitBtn");
-
-      msg.innerText = "";
-      if (!input.trim()) {
-        msg.innerText = "식별값을 입력해 주세요.";
+    // ----------------------------------------------------
+    // 2. 시트 복사 데이터 파싱 및 저장 (탭 '\t' 기준 행열 자동 분리)
+    // ----------------------------------------------------
+    function saveData() {
+      const rawText = document.getElementById("pasteInput").value.trim();
+      if (!rawText) {
+        alert("내용을 입력해 주세요.");
         return;
       }
 
-      btn.innerText = "확인 중...";
-      btn.disabled = true;
+      const rows = rawText.split(/\r?\n/);
+      const parsedList = [];
 
-      try {
-        const hash = await getSHA256(input);
-        const folderUrl = FOLDER_MAP[hash];
+      for (let line of rows) {
+        // 엑셀/구글 시트 복사 시 셀 사이는 탭(\t)으로 구분됨
+        const cols = line.split("\t");
+        if (cols.length < 5) continue;
 
-        if (folderUrl) {
-          // 본인 폴더로 즉시 이동
-          window.location.href = folderUrl;
-        } else {
-          msg.innerText = "일치하는 전용 폴더가 없습니다.";
-          btn.innerText = "폴더로 이동하기";
-          btn.disabled = false;
+        // 시트 기준 열 위치:
+        // [1]=방송일자, [2]=방송시간, [3]=브랜드명, [4]=생성 폴더명, [6]=구글 드라이브 URL
+        // 컬럼 수가 다를 경우를 대비한 유연한 링크 추출
+        let url = "";
+        let brand = "";
+        let date = "";
+        let time = "";
+        let folderName = "";
+
+        for (let cell of cols) {
+          const val = cell.trim();
+          if (val.startsWith("https://drive.google.com")) {
+            url = val;
+          }
         }
-      } catch (e) {
-        msg.innerText = "처리 중 오류가 발생했습니다.";
-        btn.innerText = "폴더로 이동하기";
-        btn.disabled = false;
+
+        // 헤더 제외 및 유효 링크가 있는 행만 추출
+        if (url) {
+          date = cols[1] ? cols[1].trim() : "";
+          time = cols[2] ? cols[2].trim() : "";
+          brand = cols[3] ? cols[3].trim() : "";
+          folderName = cols[4] ? cols[4].trim() : "";
+
+          parsedList.push({
+            date: date,
+            time: time,
+            brand: brand,
+            folder: folderName,
+            url: url
+          });
+        }
       }
+
+      if (parsedList.length === 0) {
+        alert("드라이브 링크가 포함된 유효한 데이터를 찾지 못했습니다. 표를 올바르게 복사했는지 확인하세요.");
+        return;
+      }
+
+      // 브라우저 저장소에 영구 보관
+      localStorage.setItem("PARTNER_DRIVE_DATA", JSON.stringify(parsedList));
+      alert(`총 ${parsedList.length}개의 방송 폴더 데이터가 성공적으로 저장되었습니다!`);
+      closeAdmin();
+    }
+
+    // ----------------------------------------------------
+    // 3. 사용자 조회 로직
+    // ----------------------------------------------------
+    function findDriveFolder() {
+      const dateInput = document.getElementById("broadcastDate").value.trim();
+      const timeInput = document.getElementById("broadcastTime").value.trim();
+      const errorMsg = document.getElementById("errorMsg");
+      const resultArea = document.getElementById("resultArea");
+
+      errorMsg.style.display = "none";
+      resultArea.style.display = "none";
+
+      if (!dateInput || !timeInput) {
+        showError("방송 일자와 방송 시간을 모두 선택해 주세요.");
+        return;
+      }
+
+      // 저장된 데이터 불러오기
+      const stored = localStorage.getItem("PARTNER_DRIVE_DATA");
+      if (!stored) {
+        showError("등록된 데이터가 없습니다. 관리자에게 문의하세요.");
+        return;
+      }
+
+      const list = JSON.parse(stored);
+      let match = null;
+
+      for (let item of list) {
+        // 날짜(YYYY-MM-DD) 및 시간 매칭
+        if (item.date === dateInput && item.time.startsWith(timeInput)) {
+          match = item;
+          break;
+        }
+      }
+
+      if (match) {
+        document.getElementById("folderTitle").innerText = `[${match.brand}] ${match.folder}`;
+        document.getElementById("driveLinkBtn").href = match.url;
+        resultArea.style.display = "block";
+      } else {
+        showError("해당 일시에는 배정된 방송 및 전용 폴더가 없습니다.");
+      }
+    }
+
+    function showError(msg) {
+      const errorEl = document.getElementById("errorMsg");
+      errorEl.innerText = msg;
+      errorEl.style.display = "block";
     }
   </script>
 </body>
