@@ -23,7 +23,6 @@
       border-radius: 16px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.06);
       text-align: center;
-      position: relative;
     }
     .badge {
       display: inline-block;
@@ -34,15 +33,11 @@
       font-weight: 700;
       border-radius: 20px;
       margin-bottom: 12px;
-      cursor: pointer; /* 관리자 모드 숨김 트리거 */
-      user-select: none;
     }
     h2 { font-size: 22px; color: #212529; margin-bottom: 8px; }
     p.desc { font-size: 14px; color: #6c757d; margin-bottom: 24px; line-height: 1.5; }
-    
     .field-group { text-align: left; margin-bottom: 16px; }
     .field-group label { display: block; font-size: 13px; font-weight: 600; color: #495057; margin-bottom: 6px; }
-    
     input[type="date"], select {
       width: 100%;
       padding: 13px 14px;
@@ -51,10 +46,7 @@
       border-radius: 8px;
       outline: none;
       background: #fff;
-      color: #212529;
     }
-    input[type="date"]:focus, select:focus { border-color: #1a73e8; }
-    
     button.submit-btn {
       width: 100%;
       padding: 14px;
@@ -68,7 +60,6 @@
       cursor: pointer;
     }
     button.submit-btn:hover { background: #1557b0; }
-
     #resultArea { margin-top: 24px; display: none; }
     .result-box {
       background: #f8f9fa;
@@ -91,54 +82,12 @@
       border-radius: 6px;
     }
     .msg-error { margin-top: 16px; font-size: 14px; color: #fa5252; display: none; }
-
-    /* 숨겨진 관리자 패널 스타일 */
-    #adminPanel {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-      padding: 20px;
-    }
-    .admin-card {
-      background: #fff;
-      max-width: 650px;
-      width: 100%;
-      padding: 24px;
-      border-radius: 12px;
-      text-align: left;
-    }
-    .admin-card h3 { margin-bottom: 8px; font-size: 18px; }
-    .admin-card p { font-size: 13px; color: #666; margin-bottom: 12px; line-height: 1.4; }
-    textarea {
-      width: 100%;
-      height: 200px;
-      padding: 10px;
-      font-size: 12px;
-      border: 1px solid #ced4da;
-      border-radius: 6px;
-      font-family: monospace;
-      white-space: pre;
-      overflow-x: auto;
-    }
-    .admin-btn-row {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 12px;
-    }
-    .btn-secondary { background: #ced4da; color: #333; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; }
-    .btn-primary { background: #1a73e8; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <!-- 상단 뱃지를 5번 연속 빠르게 클릭하면 관리자 모드가 열립니다 -->
-    <span class="badge" id="secretBadge">파트너 라이브</span>
+    <span class="badge">파트너 라이브</span>
     <h2>전용 폴더 바로가기</h2>
     <p class="desc">편성된 방송 날짜와 시간을 선택하시면<br>해당 브랜드의 전용 드라이브 링크가 열립니다.</p>
 
@@ -158,7 +107,7 @@
       </select>
     </div>
 
-    <button class="submit-btn" onclick="findDriveFolder()">조회하기</button>
+    <button class="submit-btn" id="searchBtn" onclick="findDriveFolder()">조회하기</button>
     <div id="errorMsg" class="msg-error"></div>
 
     <div id="resultArea">
@@ -170,109 +119,16 @@
     </div>
   </div>
 
-  <!-- 숨겨진 관리자 입력 모달창 -->
-  <div id="adminPanel">
-    <div class="admin-card">
-      <h3>🔒 관리자 데이터 동기화</h3>
-      <p>구글 시트의 <strong>[드라이브_링크공유]</strong> 탭에서 <code>No</code>부터 <code>협력사 담당 / 비고</code>까지 표 데이터 전체를 드래그 복사(Ctrl+C)한 뒤 아래에 붙여넣기(Ctrl+V)하세요.</p>
-      <textarea id="pasteInput" placeholder="시트 표 내용을 여기에 그대로 붙여넣으세요..."></textarea>
-      <div class="admin-btn-row">
-        <button class="btn-secondary" onclick="closeAdmin()">닫기</button>
-        <button class="btn-primary" onclick="saveData()">저장 및 동기화</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    // ----------------------------------------------------
-    // 1. 관리자 패널 숨김 트리거 (상단 뱃지 5회 연속 클릭)
-    // ----------------------------------------------------
-    let clickCount = 0;
-    let clickTimer = null;
-    document.getElementById("secretBadge").addEventListener("click", () => {
-      clickCount++;
-      clearTimeout(clickTimer);
-      if (clickCount >= 5) {
-        document.getElementById("adminPanel").style.display = "flex";
-        clickCount = 0;
-      }
-      clickTimer = setTimeout(() => { clickCount = 0; }, 1000);
-    });
+    // 복사한 '드라이브_링크공유' 탭의 CSV 웹 게시 링크 입력
+    const SHEET_CSV_URL = https://docs.google.com/spreadsheets/d/e/2PACX-1vSJR2Da1fGj9Ut9FmjXzZMA-r56p07tjsjrhvENi1a7AfGmk3cXG8cUkJp4Z5DseR_pomAQXnnsIKkh/pub?gid=20260102&single=true&output=csv;
 
-    function closeAdmin() {
-      document.getElementById("adminPanel").style.display = "none";
-    }
-
-    // ----------------------------------------------------
-    // 2. 시트 복사 데이터 파싱 및 저장 (탭 '\t' 기준 행열 자동 분리)
-    // ----------------------------------------------------
-    function saveData() {
-      const rawText = document.getElementById("pasteInput").value.trim();
-      if (!rawText) {
-        alert("내용을 입력해 주세요.");
-        return;
-      }
-
-      const rows = rawText.split(/\r?\n/);
-      const parsedList = [];
-
-      for (let line of rows) {
-        // 엑셀/구글 시트 복사 시 셀 사이는 탭(\t)으로 구분됨
-        const cols = line.split("\t");
-        if (cols.length < 5) continue;
-
-        // 시트 기준 열 위치:
-        // [1]=방송일자, [2]=방송시간, [3]=브랜드명, [4]=생성 폴더명, [6]=구글 드라이브 URL
-        // 컬럼 수가 다를 경우를 대비한 유연한 링크 추출
-        let url = "";
-        let brand = "";
-        let date = "";
-        let time = "";
-        let folderName = "";
-
-        for (let cell of cols) {
-          const val = cell.trim();
-          if (val.startsWith("https://drive.google.com")) {
-            url = val;
-          }
-        }
-
-        // 헤더 제외 및 유효 링크가 있는 행만 추출
-        if (url) {
-          date = cols[1] ? cols[1].trim() : "";
-          time = cols[2] ? cols[2].trim() : "";
-          brand = cols[3] ? cols[3].trim() : "";
-          folderName = cols[4] ? cols[4].trim() : "";
-
-          parsedList.push({
-            date: date,
-            time: time,
-            brand: brand,
-            folder: folderName,
-            url: url
-          });
-        }
-      }
-
-      if (parsedList.length === 0) {
-        alert("드라이브 링크가 포함된 유효한 데이터를 찾지 못했습니다. 표를 올바르게 복사했는지 확인하세요.");
-        return;
-      }
-
-      // 브라우저 저장소에 영구 보관
-      localStorage.setItem("PARTNER_DRIVE_DATA", JSON.stringify(parsedList));
-      alert(`총 ${parsedList.length}개의 방송 폴더 데이터가 성공적으로 저장되었습니다!`);
-      closeAdmin();
-    }
-
-    // ----------------------------------------------------
-    // 3. 사용자 조회 로직
-    // ----------------------------------------------------
-    function findDriveFolder() {
+    async function findDriveFolder() {
       const dateInput = document.getElementById("broadcastDate").value.trim();
       const timeInput = document.getElementById("broadcastTime").value.trim();
       const errorMsg = document.getElementById("errorMsg");
       const resultArea = document.getElementById("resultArea");
+      const searchBtn = document.getElementById("searchBtn");
 
       errorMsg.style.display = "none";
       resultArea.style.display = "none";
@@ -282,37 +138,67 @@
         return;
       }
 
-      // 저장된 데이터 불러오기
-      const stored = localStorage.getItem("PARTNER_DRIVE_DATA");
-      if (!stored) {
-        showError("등록된 데이터가 없습니다. 관리자에게 문의하세요.");
-        return;
-      }
+      searchBtn.innerText = "조회 중...";
+      searchBtn.disabled = true;
 
-      const list = JSON.parse(stored);
-      let match = null;
+      try {
+        const response = await fetch(SHEET_CSV_URL + "&t=" + new Date().getTime());
+        if (!response.ok) throw new Error("시트 연결 실패");
 
-      for (let item of list) {
-        // 날짜(YYYY-MM-DD) 및 시간 매칭
-        if (item.date === dateInput && item.time.startsWith(timeInput)) {
-          match = item;
-          break;
+        const text = await response.text();
+        const lines = text.split(/\r?\n/);
+        let matched = null;
+
+        for (let i = 0; i < lines.length; i++) {
+          const row = parseCSVRow(lines[i]);
+          if (row.length < 7) continue;
+
+          // 시트 구조: B열=일자, C열=시간, D열=브랜드, E열=폴더명, G열=드라이브URL
+          const rDate = clean(row[1]);
+          const rTime = clean(row[2]);
+          const rBrand = clean(row[3]);
+          const rFolder = clean(row[4]);
+          const rUrl = clean(row[6]);
+
+          if (rDate === dateInput && rTime.startsWith(timeInput) && rUrl.startsWith("http")) {
+            matched = { brand: rBrand, folder: rFolder, url: rUrl };
+            break;
+          }
         }
-      }
 
-      if (match) {
-        document.getElementById("folderTitle").innerText = `[${match.brand}] ${match.folder}`;
-        document.getElementById("driveLinkBtn").href = match.url;
-        resultArea.style.display = "block";
-      } else {
-        showError("해당 일시에는 배정된 방송 및 전용 폴더가 없습니다.");
+        if (matched) {
+          document.getElementById("folderTitle").innerText = `[${matched.brand}] ${matched.folder}`;
+          document.getElementById("driveLinkBtn").href = matched.url;
+          resultArea.style.display = "block";
+        } else {
+          showError("해당 일시에는 배정된 방송 및 전용 폴더가 없습니다.");
+        }
+      } catch (err) {
+        showError("데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+      } finally {
+        searchBtn.innerText = "조회하기";
+        searchBtn.disabled = false;
       }
     }
 
+    function clean(str) { return str ? str.replace(/^"|"$/g, "").trim() : ""; }
     function showError(msg) {
-      const errorEl = document.getElementById("errorMsg");
-      errorEl.innerText = msg;
-      errorEl.style.display = "block";
+      const el = document.getElementById("errorMsg");
+      el.innerText = msg;
+      el.style.display = "block";
+    }
+    function parseCSVRow(row) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < row.length; i++) {
+        const char = row[i];
+        if (char === '"' || char === "'") inQuotes = !inQuotes;
+        else if (char === ',' && !inQuotes) { result.push(current); current = ''; }
+        else current += char;
+      }
+      result.push(current);
+      return result;
     }
   </script>
 </body>
